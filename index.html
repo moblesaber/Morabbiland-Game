@@ -1,0 +1,1404 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>مدیریت فوتبال آنلاین</title>
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
+    
+    <style>
+        :root {
+            --bg-dark: #0a2412;
+            --bg-card: #113a1f;
+            --gold: #ffcc00;
+            --gold-dark: #cc9900;
+            --text-light: #ffffff;
+            --text-muted: #88a38e;
+            --energy-high: #4caf50;
+            --energy-med: #ff9800;
+            --energy-low: #f44336;
+            --nav-bg: #06160b;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Vazirmatn', Tahoma, sans-serif; }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* ================= صفحه لاگین (اکانت) ================= */
+        #login-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to bottom, #06160b, #0d3311);
+            z-index: 5000; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px;
+        }
+        .login-box { background: rgba(0,0,0,0.7); border: 2px solid var(--gold); border-radius: 15px; padding: 30px 20px; width: 100%; max-width: 350px; text-align: center; box-shadow: 0 0 20px rgba(0,0,0,0.8); }
+        .login-box h1 { color: var(--gold); margin-bottom: 10px; font-size: 24px; }
+        .login-box p { font-size: 13px; color: #aaa; margin-bottom: 20px; }
+        .login-box input { width: 100%; padding: 12px; background: #111; border: 1px solid #444; border-radius: 8px; color: white; margin-bottom: 15px; font-family: inherit; outline: none; text-align: center; font-size: 16px;}
+        .login-box button { width: 100%; padding: 12px; background: var(--gold); border: none; border-radius: 8px; font-weight: bold; font-size: 16px; cursor: pointer; transition: 0.2s;}
+        .login-box button:active { transform: scale(0.95); }
+        .avatar-selection { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; }
+        .avatar-opt { width: 50px; height: 50px; border-radius: 50%; background: #333; border: 2px solid #555; display: flex; justify-content: center; align-items: center; font-size: 24px; cursor: pointer; transition: 0.2s;}
+        .avatar-opt.selected { border-color: var(--gold); background: var(--bg-card); transform: scale(1.1);}
+
+        /* ================= هدر بالا ================= */
+        .top-header { background: linear-gradient(to bottom, #0d3311, #06160b); padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--gold); z-index: 100; }
+        .user-profile { display: flex; align-items: center; gap: 8px; }
+        .user-avatar { width: 45px; height: 45px; background-color: #333; border-radius: 50%; border: 2px solid var(--gold); display: flex; justify-content: center; align-items: center; font-size: 22px; }
+        .user-name-box .name { font-weight: bold; font-size: 15px; color: var(--gold); }
+        .header-actions { display: flex; align-items: center; gap: 8px; }
+        .currency-box { display: flex; flex-direction: column; gap: 4px; background: rgba(0,0,0,0.5); padding: 5px 10px; border-radius: 10px; border: 1px solid #333; }
+        .currency-item { display: flex; justify-content: space-between; font-size: 12px; font-weight: bold; gap: 15px; }
+        .currency-item span:last-child { color: var(--gold); }
+        .pm-btn { position: relative; background: #222; border: 1px solid var(--gold-dark); width: 40px; height: 40px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 18px; cursor: pointer; }
+        .pm-badge { position: absolute; top: -5px; right: -5px; background: #c62828; color: white; font-size: 11px; font-weight: bold; width: 18px; height: 18px; border-radius: 50%; display: flex; justify-content: center; align-items: center; border: 2px solid var(--bg-dark); }
+
+        /* ================= تب‌های بالا ================= */
+        .top-tabs { display: flex; background: #06160b; border-bottom: 1px solid #222; }
+        .top-tab { flex: 1; text-align: center; padding: 12px 5px; color: var(--text-muted); font-size: 13px; font-weight: bold; cursor: pointer; border-bottom: 3px solid transparent; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .top-tab.active { color: var(--gold); border-bottom: 3px solid var(--gold); background: #0d3311; }
+        .top-tab-icon { font-size: 18px; }
+
+        /* ================= محتوای اصلی ================= */
+        .main-content { flex: 1; overflow-y: auto; padding-bottom: 80px; position: relative; }
+        .page-section { display: none; padding: 15px; }
+        .page-section.active { display: block; }
+
+        /* کارت‌ها */
+        .profile-card { background: linear-gradient(to left, #d4af37, #997a00); color: #000; border-radius: 12px; padding: 15px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); border: 2px solid #fff3; }
+        .profile-info h2 { font-size: 18px; margin-bottom: 2px; }
+        .profile-info .league-name { font-size: 12px; font-weight: bold; color: #333; }
+        .profile-stats { display: flex; gap: 10px; background: rgba(0,0,0,0.7); padding: 8px 12px; border-radius: 8px; color: white; }
+        .stat-box { display: flex; flex-direction: column; align-items: center; font-size: 11px; }
+        .stat-box span:first-child { font-size: 16px; font-weight: bold; color: var(--gold); }
+
+        .news-banner { background: var(--bg-card); border: 1px solid var(--gold-dark); border-radius: 10px; padding: 15px; margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; }
+        .news-banner h3 { font-size: 14px; color: var(--gold); margin-bottom: 5px; }
+        .news-banner p { font-size: 12px; color: #ccc; }
+
+        .section-title { font-size: 14px; color: var(--gold); margin-bottom: 10px; margin-top: 20px; display: flex; align-items: center; gap: 5px; }
+        .match-card { background: rgba(0,0,0,0.5); border: 1px solid #333; border-radius: 8px; padding: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .match-card.next { border-color: var(--gold); background: var(--bg-card); }
+        .match-teams { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+        .m-team { font-weight: bold; font-size: 13px; width: 35%; text-align: center; }
+        .m-score { background: #111; padding: 4px 12px; border-radius: 5px; font-weight: bold; font-size: 15px; color: var(--gold); }
+        .m-info { font-size: 10px; color: var(--text-muted); text-align: left; width: 30%; display: flex; flex-direction: column; gap: 3px;}
+        .win-badge { color: #4caf50; font-weight: bold; }
+        .loss-badge { color: #f44336; font-weight: bold; }
+        .draw-badge { color: #ff9800; font-weight: bold; }
+
+        /* مدیریت تیم */
+        .pitch-container { position: relative; width: 100%; height: 420px; background-color: #1b5e20; border: 2px solid #4caf50; border-radius: 10px; margin-bottom: 15px; overflow: hidden; background-image: repeating-linear-gradient(0deg, transparent, transparent 25px, rgba(0,0,0,0.15) 25px, rgba(0,0,0,0.15) 50px); display: flex; flex-direction: column; justify-content: space-between; padding: 20px 10px; }
+        .pitch-line-center { position: absolute; top: 50%; left: 0; width: 100%; height: 2px; background: rgba(255,255,255,0.3); transform: translateY(-50%); }
+        .pitch-circle { position: absolute; top: 50%; left: 50%; width: 90px; height: 90px; border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; transform: translate(-50%, -50%); }
+        .penalty-box-top { position: absolute; top: 0; left: 50%; width: 160px; height: 60px; border: 2px solid rgba(255,255,255,0.3); border-top: none; transform: translateX(-50%); }
+        .penalty-box-bottom { position: absolute; bottom: 0; left: 50%; width: 160px; height: 60px; border: 2px solid rgba(255,255,255,0.3); border-bottom: none; transform: translateX(-50%); }
+        .pitch-row { display: flex; justify-content: space-around; width: 100%; z-index: 2; position: relative;}
+        
+        .player-container { display: flex; flex-direction: column; align-items: center; position: relative;}
+        .player-card { width: 45px; height: 45px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 10px; color: #fff; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.5); cursor: pointer; position: relative; border: 2px solid #fff; }
+        .pos-GK { background-color: #333; }
+        .pos-DF { background-color: #0277bd; }
+        .pos-MF { background-color: #2e7d32; }
+        .pos-FW { background-color: #c62828; }
+        .player-card.selected { border: 3px solid var(--gold); transform: scale(1.1); z-index: 5; }
+        .player-ovr { font-size: 14px; }
+        .player-name { font-size: 8px; opacity: 0.9; width: 45px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; position: absolute; bottom: -18px; color: #fff; text-shadow: 1px 1px 0 #000; font-weight: bold;}
+        
+        .energy-bar { width: 30px; height: 4px; background-color: #333; border-radius: 2px; margin-top: 5px; position: relative; z-index: 3;}
+        .energy-fill { height: 100%; border-radius: 2px; transition: width 0.3s; }
+        .energy-high { background-color: var(--energy-high); }
+        .energy-med { background-color: var(--energy-med); }
+        .energy-low { background-color: var(--energy-low); }
+
+        .bench-title { font-size: 13px; color: var(--gold); margin-bottom: 10px; text-align: center;}
+        .bench { display: flex; flex-wrap: wrap; gap: 15px 10px; background: #111; padding: 15px 10px; border-radius: 10px; justify-content: center; border: 1px solid #333;}
+
+        .tactics-panel { background: #111; border: 1px solid #333; border-radius: 10px; padding: 15px; margin-top: 15px; }
+        .tactics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .tactic-btn { background: #222; color: #aaa; border: 1px solid #444; padding: 10px; border-radius: 6px; cursor: pointer; font-size: 13px; }
+        .tactic-btn.active { background: var(--gold-dark); color: #000; border-color: var(--gold); font-weight: bold; }
+        .slider-container { margin-bottom: 15px; }
+        .slider-labels { display: flex; justify-content: space-between; font-size: 11px; color: #888; margin-bottom: 5px; }
+        input[type=range] { width: 100%; accent-color: var(--gold); }
+
+        /* لیگ */
+        .league-selector-container { display: flex; gap: 10px; margin-bottom: 15px; }
+        .league-select { flex: 1; padding: 10px; background: #111; color: var(--gold); border: 1px solid #444; border-radius: 8px; outline: none; }
+        .league-table { width: 100%; border-collapse: collapse; font-size: 12px; text-align: center; background: #111; border-radius: 8px; overflow: hidden; }
+        .league-table th { background: #0d3311; color: var(--gold); padding: 10px 5px; border-bottom: 2px solid var(--gold); font-weight: normal;}
+        .league-table td { padding: 8px 5px; border-bottom: 1px solid #222; }
+        .league-table tr:nth-child(even) { background: #181818; }
+        .league-table tr.my-team { background: rgba(255, 204, 0, 0.15); font-weight: bold; color: var(--gold); }
+        .league-table .team-name-col { text-align: right; padding-right: 10px; }
+        tr.promotion { border-right: 3px solid #4caf50; }
+        tr.relegation { border-right: 3px solid #f44336; }
+        tr.champion { border-right: 3px solid #ffcc00; }
+
+        /* جام */
+        .cup-bracket { display: flex; flex-direction: column; gap: 10px; }
+        .cup-round { background: #111; border-radius: 8px; padding: 10px; }
+        .cup-round h4 { color: var(--gold); text-align: center; margin-bottom: 10px; font-size: 13px; border-bottom: 1px solid #333; padding-bottom: 5px;}
+        .cup-match { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; border-bottom: 1px solid #222; font-size: 12px; }
+        .cup-match:last-child { border-bottom: none; }
+        .cup-match .team { width: 40%; text-align: center; }
+        .cup-match .score { background: #222; padding: 2px 8px; border-radius: 4px; color: var(--gold); font-weight: bold; }
+
+        /* مودال‌ها */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; display: none; justify-content: center; align-items: center; padding: 20px; }
+        .modal-content { background: var(--bg-card); border: 2px solid var(--gold); border-radius: 12px; padding: 20px; width: 100%; max-width: 350px; box-shadow: 0 0 20px rgba(0,0,0,0.8); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        .modal-header h3 { color: var(--gold); font-size: 16px; }
+        .close-modal { background: none; border: none; color: #f44336; font-size: 20px; cursor: pointer; }
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; font-size: 12px; color: #aaa; margin-bottom: 5px; }
+        .input-group input { width: 100%; padding: 10px; background: #06160b; border: 1px solid #444; border-radius: 8px; color: white; outline: none; font-family: inherit; }
+        .btn { padding: 12px; border: none; border-radius: 8px; font-weight: bold; font-size: 14px; cursor: pointer; width: 100%; text-align: center; }
+        .btn-gold { background: linear-gradient(to bottom, var(--gold), var(--gold-dark)); color: #000; }
+        .btn-red { background: #c62828; color: white; }
+        .btn-dark { background: #222; color: white; border: 1px solid #444; }
+
+        /* گپ و پیوی */
+        #page-public-chat { display: none; flex-direction: column; height: calc(100vh - 120px); padding: 0; }
+        #page-public-chat.active { display: flex; }
+        .chat-header { background: #0d3311; padding: 10px 15px; border-bottom: 1px solid #333; font-weight: bold; color: var(--gold); text-align: center; }
+        .chat-messages { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
+        .msg-bubble { max-width: 85%; padding: 10px 15px; border-radius: 15px; font-size: 13px; line-height: 1.5; }
+        .msg-bubble.other { background: #222; color: #ddd; align-self: flex-start; border-bottom-right-radius: 2px; }
+        .msg-bubble.me { background: #1b5e20; color: white; align-self: flex-end; border-bottom-left-radius: 2px; }
+        .msg-sender { font-size: 10px; color: #888; margin-bottom: 3px; display: block;}
+        .chat-input-box { background: #06160b; padding: 10px; display: flex; gap: 10px; border-top: 1px solid #222; }
+        .chat-input-box input { flex: 1; background: #111; border: 1px solid #333; color: white; padding: 12px; border-radius: 20px; outline: none; }
+        .chat-input-box button { background: var(--gold); color: #000; border: none; border-radius: 50%; width: 45px; height: 45px; font-size: 18px; cursor: pointer; flex-shrink: 0;}
+        .pm-contacts { display: flex; flex-direction: column; gap: 10px; max-height: 300px; overflow-y: auto;}
+        .pm-contact-item { display: flex; align-items: center; gap: 10px; background: #06160b; padding: 10px; border-radius: 8px; cursor: pointer; border: 1px solid #222;}
+        .pm-contact-item:hover { border-color: var(--gold); }
+        .pm-avatar { width: 40px; height: 40px; background: #333; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 20px;}
+        #pm-chat-view { display: none; flex-direction: column; height: 400px; }
+        .pm-chat-messages { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 8px; background: #06160b; border-radius: 8px;}
+        .pm-chat-input { display: flex; gap: 5px; margin-top: 10px; }
+        .pm-chat-input input { flex: 1; padding: 10px; background: #111; border: 1px solid #333; border-radius: 5px; color: white;}
+        .pm-chat-input button { background: var(--gold); border: none; padding: 0 15px; border-radius: 5px; cursor: pointer; font-weight: bold;}
+
+        /* نوار پایین */
+        .bottom-nav { background-color: var(--nav-bg); border-top: 2px solid var(--gold); display: flex; justify-content: space-around; padding: 5px 0; position: fixed; bottom: 0; width: 100%; z-index: 100;}
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: #666; font-size: 10px; cursor: pointer; width: 16.6%; }
+        .nav-item.active { color: var(--gold); }
+        .nav-icon { font-size: 20px; margin-bottom: 2px; }
+
+        /* صفحه مسابقه */
+        #screen-match { background-color: #06160b; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 2000; display: none; flex-direction: column;}
+        .scoreboard { background: #000; border-bottom: 2px solid var(--gold); padding: 20px 15px; display: flex; flex-direction: column; align-items: center; }
+        .score-display { display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 400px; }
+        .team-name { font-weight: bold; font-size: 16px; width: 35%; text-align: center; }
+        .score-num { display: flex; justify-content: center; align-items: center; gap: 15px; font-size: 40px; font-weight: bold; color: var(--gold); width: 30%; }
+        .timer { font-size: 14px; background: #c62828; color: white; padding: 4px 15px; border-radius: 20px; margin-top: 10px; }
+        .event-log { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 8px; }
+        .event-item { background: #111; padding: 10px; border-radius: 8px; border-right: 3px solid #333; font-size: 13px; }
+        .event-item.goal { border-color: #4caf50; background: #1b5e20; }
+    </style>
+</head>
+<body>
+
+    <!-- صفحه لاگین -->
+    <div id="login-screen">
+        <div class="login-box">
+            <h1>⚽ مدیریت فوتبال</h1>
+            <p>به دنیای مدیران فوتبال خوش آمدید</p>
+            
+            <div class="avatar-selection">
+                <div class="avatar-opt selected" onclick="selectAvatar(this, '👤')">👤</div>
+                <div class="avatar-opt" onclick="selectAvatar(this, '👨‍💼')">👨‍💼</div>
+                <div class="avatar-opt" onclick="selectAvatar(this, '🦸‍♂️')">🦸‍♂️</div>
+                <div class="avatar-opt" onclick="selectAvatar(this, '👑')">👑</div>
+            </div>
+
+            <input type="text" id="login-team-name" placeholder="نام تیم خود را وارد کنید..." maxlength="15">
+            <button onclick="createAccount()">ورود به بازی</button>
+        </div>
+    </div>
+
+    <div class="top-header">
+        <div class="user-profile">
+            <div class="user-avatar" id="header-avatar">👤</div>
+            <div class="user-name-box"><span class="name" id="header-team-name">مهمان</span></div>
+        </div>
+        <div class="header-actions">
+            <div class="currency-box">
+                <div class="currency-item"><span>🪙</span><span id="header-coins">0</span></div>
+                <div class="currency-item"><span>💎</span><span>324</span></div>
+            </div>
+            <div class="pm-btn" onclick="openPM()">💬<div class="pm-badge" id="pm-badge">6</div></div>
+        </div>
+    </div>
+
+    <div class="top-tabs" id="top-nav-bar">
+        <div class="top-tab active" onclick="switchTopTab('club')" id="tab-club"><span class="top-tab-icon">🏠</span> باشگاه</div>
+        <div class="top-tab" onclick="switchTopTab('chat')" id="tab-chat"><span class="top-tab-icon">💬</span> گپ عمومی</div>
+        <div class="top-tab" onclick="alert('به زودی...')"><span class="top-tab-icon">📝</span> دیوار</div>
+        <div class="top-tab" onclick="alert('به زودی...')"><span class="top-tab-icon">🎯</span> پیش‌بینی</div>
+    </div>
+
+    <div class="main-content">
+        <div class="page-section active" id="page-club">
+            <div class="profile-card">
+                <div class="profile-info">
+                    <h2 id="club-team-name">تیم من</h2>
+                    <p class="league-name" id="club-league-name">لیگ در حال بارگذاری...</p>
+                    <p style="font-size: 11px; margin-top: 5px; font-weight: bold; color: #222;" id="club-coach-name">مربی: ندارد</p>
+                </div>
+                <div class="profile-stats">
+                    <div class="stat-box"><span id="club-power">0</span><span>قدرت</span></div>
+                    <div class="stat-box"><span id="club-rank">-</span><span>رتبه</span></div>
+                </div>
+            </div>
+            <div style="text-align: left; margin-bottom: 15px;">
+                <button class="btn btn-dark" style="width: auto; display: inline-block; padding: 8px 15px; font-size: 12px;" onclick="openSettings()">⚙️ تنظیمات</button>
+            </div>
+            <div class="news-banner">
+                <div><h3>📰 روزنامه</h3><p>آخرین اخبار لیگ...</p></div>
+                <span style="font-size: 24px;">📰</span>
+            </div>
+            <h3 class="section-title">⚽ بازی بعدی شما</h3>
+            <div id="club-next-match-container"></div>
+            <h3 class="section-title">📅 بازی‌های پیش رو</h3>
+            <div id="club-upcoming-matches"></div>
+            <h3 class="section-title">📊 نتایج گذشته</h3>
+            <div id="club-past-matches"></div>
+        </div>
+
+        <div class="page-section" id="page-public-chat">
+            <div class="chat-header">گپ عمومی</div>
+            <div class="chat-messages" id="public-chat-window"></div>
+            <div class="chat-input-box">
+                <input type="text" id="public-chat-input" placeholder="پیام بنویسید..." onkeypress="handlePublicChat(event)">
+                <button onclick="sendPublicChat()">↑</button>
+            </div>
+        </div>
+
+        <div class="page-section" id="page-league">
+            <div class="league-selector-container">
+                <select class="league-select" id="league-tier-select" onchange="updateGroupDropdown(); renderLeagueTable();">
+                    <option value="0">🏆 لیگ برتر</option>
+                    <option value="1">🥈 لیگ دسته ۱</option>
+                    <option value="2">🥉 لیگ دسته ۲</option>
+                    <option value="3">🏅 لیگ دسته ۳</option>
+                </select>
+                <select class="league-select" id="league-group-select" onchange="renderLeagueTable()"></select>
+            </div>
+            <table class="league-table">
+                <thead><tr><th>#</th><th class="team-name-col">تیم</th><th>بازی</th><th>برد</th><th>مساوی</th><th>باخت</th><th>تفاضل</th><th>امتیاز</th></tr></thead>
+                <tbody id="league-tbody"></tbody>
+            </table>
+        </div>
+
+        <div class="page-section" id="page-cup">
+            <h2 style="color: var(--gold); text-align: center; margin-bottom: 15px;">🏆 جام حذفی (۸ تیم)</h2>
+            <div class="cup-bracket" id="cup-bracket">
+                <div class="cup-round"><h4>یک‌چهارم نهایی</h4><div id="cup-qf"></div></div>
+                <div class="cup-round"><h4>نیمه‌نهایی</h4><div id="cup-sf"></div></div>
+                <div class="cup-round"><h4>فینال</h4><div id="cup-final"></div></div>
+            </div>
+            <button class="btn btn-gold" style="margin-top: 15px;" onclick="startCupMatch()" id="btn-play-cup">شروع بازی جام</button>
+        </div>
+
+        <div class="page-section" id="page-management">
+            <div class="pitch-container">
+                <div class="pitch-line-center"></div><div class="pitch-circle"></div>
+                <div class="penalty-box-top"></div><div class="penalty-box-bottom"></div>
+                <div class="pitch-row" id="row-fw"></div><div class="pitch-row" id="row-mf"></div>
+                <div class="pitch-row" id="row-df"></div><div class="pitch-row" id="row-gk"></div>
+            </div>
+            <h3 class="bench-title">نیمکت</h3>
+            <div class="bench" id="bench"></div>
+            <div class="tactics-panel">
+                <h3 style="color: var(--gold); text-align: center; font-size: 14px; margin-bottom: 10px;">🎯 تاکتیک</h3>
+                <div class="tactics-grid">
+                    <button class="tactic-btn" onclick="setTactic('short')" id="btn-short">پاس کوتاه</button>
+                    <button class="tactic-btn" onclick="setTactic('long')" id="btn-long">پاس بلند</button>
+                    <button class="tactic-btn" onclick="setTactic('press')" id="btn-press">پرس شدید</button>
+                    <button class="tactic-btn" onclick="setTactic('counter')" id="btn-counter">ضد حمله</button>
+                </div>
+                <div class="slider-container">
+                    <div class="slider-labels"><span>دفاعی</span><span>هجومی</span></div>
+                    <input type="range" id="tactic-slider" min="0" max="100" value="50" oninput="updateSliderLabel()">
+                    <div style="text-align: center; font-size: 12px; color: #aaa; margin-top: 5px;" id="slider-value-text">متعادل</div>
+                </div>
+                <button class="btn btn-gold" onclick="confirmTactics()">✅ ذخیره تاکتیک</button>
+            </div>
+        </div>
+
+        <div class="page-section" id="page-union">
+            <div style="text-align: center; padding: 50px 20px;"><h2 style="color: var(--gold); margin-bottom: 20px;">🤝 اتحاد</h2><p style="color: #888;">به زودی...</p></div>
+        </div>
+
+        <div class="page-section" id="page-transfers">
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <button class="btn btn-gold" onclick="switchTransferTab('players')" id="btn-tab-players">بازیکنان</button>
+                <button class="btn btn-dark" onclick="switchTransferTab('coaches')" id="btn-tab-coaches">مربیان</button>
+            </div>
+            <div id="transfers-players-view"><div id="market-players-list"></div></div>
+            <div id="transfers-coaches-view" style="display: none;">
+                <div class="profile-card" style="background: #222; color: white; padding: 15px; border-color: #444;">
+                    <div><p style="font-size: 12px; color: #aaa;">مربی فعلی:</p><h3 id="current-coach-name" style="color: var(--gold);">هیچ مربی ندارید</h3></div>
+                    <button class="btn btn-red" style="width: auto; padding: 5px 10px; font-size: 12px;" onclick="fireCoach()" id="btn-fire-coach" style="display:none;">اخراج</button>
+                </div>
+                <div id="market-coaches-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bottom-nav" id="bottom-nav-bar">
+        <div class="nav-item active" onclick="switchBottomTab('club')" id="nav-club"><div class="nav-icon">🏠</div><div>تیم من</div></div>
+        <div class="nav-item" onclick="switchBottomTab('league')" id="nav-league"><div class="nav-icon">🏆</div><div>لیگ</div></div>
+        <div class="nav-item" onclick="switchBottomTab('management')" id="nav-management"><div class="nav-icon">⚽</div><div>مدیریت</div></div>
+        <div class="nav-item" onclick="switchBottomTab('cup')" id="nav-cup"><div class="nav-icon">🏅</div><div>جام</div></div>
+        <div class="nav-item" onclick="switchBottomTab('union')" id="nav-union"><div class="nav-icon">🤝</div><div>اتحاد</div></div>
+        <div class="nav-item" onclick="switchBottomTab('transfers')" id="nav-transfers"><div class="nav-icon">🔄</div><div>انتقالات</div></div>
+    </div>
+
+    <div class="modal-overlay" id="settings-modal">
+        <div class="modal-content">
+            <div class="modal-header"><h3>تنظیمات</h3><button class="close-modal" onclick="closeSettings()">×</button></div>
+            <div class="input-group"><label>نام تیم</label><input type="text" id="settings-team-name" placeholder="نام تیم..."></div>
+            <button class="btn btn-gold" onclick="saveTeamName()" style="margin-bottom: 10px;">💾 ذخیره</button>
+            <button class="btn btn-red" onclick="resetGame()">🗑️ حذف اکانت و ریست</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="pm-modal">
+        <div class="modal-content">
+            <div class="modal-header"><h3 id="pm-title">پیام‌ها</h3><button class="close-modal" onclick="closePM()">×</button></div>
+            <div class="pm-contacts" id="pm-contacts-list"></div>
+            <div id="pm-chat-view">
+                <div class="pm-chat-messages" id="pm-chat-messages"></div>
+                <div class="pm-chat-input"><input type="text" id="pm-chat-input" placeholder="پیام..." onkeypress="handlePMEnter(event)"><button onclick="sendPM()">ارسال</button></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="screen" id="screen-match">
+        <div class="scoreboard">
+            <div style="font-size: 12px; color: #aaa; margin-bottom: 10px;" id="match-league-info">لیگ</div>
+            <div class="score-display">
+                <div class="team-name" style="color: var(--gold);" id="match-home-name">تیم من</div>
+                <div class="score-num"><span id="score-home">0</span> <span>-</span> <span id="score-away">0</span></div>
+                <div class="team-name" style="color: #ccc;" id="match-away-name">حریف</div>
+            </div>
+            <div class="timer" id="match-timer">0'</div>
+        </div>
+        <div class="event-log" id="event-log"></div>
+        <div style="padding: 15px; background: #000;">
+            <button class="btn btn-gold" id="btn-skip" onclick="skipMatch()" style="display: none;">⏩ رد کردن</button>
+            <button class="btn btn-dark" id="btn-close-match" onclick="closeMatch()" style="display: none;">ادامه</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="season-end-modal">
+        <div class="modal-content">
+            <h2 style="color: var(--gold); text-align: center; margin-bottom: 15px;">🏁 پایان فصل!</h2>
+            <p id="season-winner-text" style="text-align: center; font-size: 14px; line-height: 1.8; margin-bottom: 20px;">...</p>
+            <button class="btn btn-gold" onclick="startNewSeason()">شروع فصل بعد</button>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // دیتاهای اولیه
+        // ==========================================
+        const defaultPlayers = [
+            { id: 1, name: 'بیرانوند', pos: 'GK', ovr: 85, energy: 100, inLineup: true },
+            { id: 3, name: 'کنعانی', pos: 'DF', ovr: 80, energy: 100, inLineup: true },
+            { id: 4, name: 'پورعلی', pos: 'DF', ovr: 82, energy: 100, inLineup: true },
+            { id: 5, name: 'خلیل‌زاده', pos: 'DF', ovr: 78, energy: 100, inLineup: true },
+            { id: 6, name: 'محرمی', pos: 'DF', ovr: 79, energy: 100, inLineup: true },
+            { id: 8, name: 'عزت‌اللهی', pos: 'MF', ovr: 83, energy: 100, inLineup: true },
+            { id: 9, name: 'نوراللهی', pos: 'MF', ovr: 78, energy: 100, inLineup: true },
+            { id: 10, name: 'قائدی', pos: 'MF', ovr: 81, energy: 100, inLineup: true },
+            { id: 13, name: 'طارمی', pos: 'FW', ovr: 88, energy: 100, inLineup: true },
+            { id: 14, name: 'آزمون', pos: 'FW', ovr: 84, energy: 100, inLineup: true },
+            { id: 15, name: 'جهانبخش', pos: 'FW', ovr: 82, energy: 100, inLineup: true },
+            { id: 2, name: 'نیازمند', pos: 'GK', ovr: 72, energy: 100, inLineup: false },
+            { id: 7, name: 'حسینی', pos: 'DF', ovr: 74, energy: 100, inLineup: false },
+            { id: 11, name: 'امیری', pos: 'MF', ovr: 77, energy: 100, inLineup: false },
+            { id: 12, name: 'چشمی', pos: 'MF', ovr: 76, energy: 100, inLineup: false },
+            { id: 16, name: 'قوچان‌نژاد', pos: 'FW', ovr: 75, energy: 100, inLineup: false }
+        ];
+
+        const firstNames = ['علی', 'رضا', 'محمد', 'حسین', 'امیر', 'سعید', 'مهدی', 'حمید', 'فرهاد', 'کاوه', 'آرش', 'بهزاد'];
+        const lastNames = ['احمدی', 'محمدی', 'رضایی', 'حسینی', 'کریمی', 'موسوی', 'صادقی', 'جعفری', 'نیکخواه', 'شریفی', 'کاظمی', 'رحیمی'];
+
+        const coachMarketData = [
+            { id: 201, name: 'کارلوس کی‌روش', ovr: 88, price: 400000, bonus: 5 },
+            { id: 202, name: 'امیر قلعه‌نویی', ovr: 85, price: 300000, bonus: 3 },
+            { id: 203, name: 'یحیی گل‌محمدی', ovr: 82, price: 200000, bonus: 2 }
+        ];
+
+        function generateLeagues() {
+            let leagues = [];
+            let globalId = 0;
+            
+            let t0Teams = [];
+            let t0Names = ["پرسپولیس", "استقلال", "سپاهان", "تراکتور", "فولاد", "گل‌گهر", "مس رفسنجان", "نساجی", "آلومینیوم", "هوادار"];
+            for(let i=0; i<10; i++) {
+                t0Teams.push({ id: `ai_${globalId++}`, name: t0Names[i], strength: 75 + Math.floor(Math.random()*15), p:0, w:0, d:0, l:0, gf:0, ga:0, pts:0 });
+            }
+            leagues.push({ id: 0, name: 'لیگ برتر', groups: [{ name: 'لیگ برتر', teams: t0Teams }] });
+
+            let t1Groups = [];
+            for(let g=0; g<2; g++) {
+                let teams = [];
+                for(let i=0; i<8; i++) {
+                    teams.push({ id: `ai_${globalId++}`, name: `تیم ${g+1}-${i+1}`, strength: 65 + Math.floor(Math.random()*15), p:0, w:0, d:0, l:0, gf:0, ga:0, pts:0 });
+                }
+                t1Groups.push({ name: `گروه ${g+1}`, teams: teams });
+            }
+            leagues.push({ id: 1, name: 'لیگ دسته ۱', groups: t1Groups });
+
+            let t2Groups = [];
+            for(let g=0; g<4; g++) {
+                let teams = [];
+                for(let i=0; i<8; i++) {
+                    teams.push({ id: `ai_${globalId++}`, name: `تیم ${g+1}-${i+1}`, strength: 55 + Math.floor(Math.random()*15), p:0, w:0, d:0, l:0, gf:0, ga:0, pts:0 });
+                }
+                t2Groups.push({ name: `گروه ${g+1}`, teams: teams });
+            }
+            leagues.push({ id: 2, name: 'لیگ دسته ۲', groups: t2Groups });
+
+            let t3Groups = [];
+            for(let g=0; g<8; g++) {
+                let teams = [];
+                for(let i=0; i<8; i++) {
+                    teams.push({ id: `ai_${globalId++}`, name: `تیم ${g+1}-${i+1}`, strength: 45 + Math.floor(Math.random()*15), p:0, w:0, d:0, l:0, gf:0, ga:0, pts:0 });
+                }
+                t3Groups.push({ name: `گروه ${g+1}`, teams: teams });
+            }
+            leagues.push({ id: 3, name: 'لیگ دسته ۳', groups: t3Groups });
+
+            return leagues;
+        }
+
+        function generateMarketPlayers() {
+            let arr = [];
+            for(let i=0; i<8; i++) {
+                let posArray = ['GK', 'DF', 'MF', 'FW'];
+                let pos = posArray[Math.floor(Math.random() * posArray.length)];
+                let ovr = Math.floor(Math.random() * 15) + 75;
+                let price = ovr * 3000 + Math.floor(Math.random() * 50000);
+                arr.push({
+                    id: Date.now() + i, 
+                    name: firstNames[Math.floor(Math.random()*firstNames.length)] + ' ' + lastNames[Math.floor(Math.random()*lastNames.length)],
+                    pos: pos, ovr: ovr, energy: 100, price: price
+                });
+            }
+            return arr;
+        }
+
+        let marketPlayers = []; 
+        let allPlayers = [];
+        let leaguesData = [];
+        let userTier = 3; 
+        let userGroupIndex = 0;
+        let userTeamData = { id: 'me', name: 'مهمان', avatar: '👤', strength: 80, p: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, pts: 0 };
+        let currentWeek = 1;
+        let currentSeason = 1;
+        let myCoins = 100000; 
+        let selectedBenchPlayerId = null; 
+        let myTeamPower = 80;
+        let schedule = []; 
+        let userMatchHistory = []; 
+        
+        let savedTactic = 'short';
+        let savedSliderValue = 50;
+        let myCoach = null;
+
+        let globalMessages = [];
+        let privateMessages = {}; 
+        let contacts = [
+            { id: 'c1', name: 'کاربر فعال ۱', avatar: '👨‍💼' },
+            { id: 'c2', name: 'مدیر تیم قهرمان', avatar: '🦸‍♂️' },
+            { id: 'c3', name: 'مربی اسطوره', avatar: '🧙‍♂️' }
+        ];
+        let currentPMContactId = null;
+
+        let cupTeams = [];
+        let cupStage = 0;
+        let cupUserOpponent = null;
+        let selectedAvatar = '👤';
+
+        // ==========================================
+        // لاگین
+        // ==========================================
+        function selectAvatar(el, avatar) {
+            document.querySelectorAll('.avatar-opt').forEach(a => a.classList.remove('selected'));
+            el.classList.add('selected');
+            selectedAvatar = avatar;
+        }
+
+        function createAccount() {
+            let name = document.getElementById('login-team-name').value.trim();
+            if(name.length < 3) {
+                alert('نام تیم باید حداقل ۳ حرف باشد.');
+                return;
+            }
+
+            initNewGame();
+            
+            // بعد از ساخت دیتای اولیه، اسم و آواتار رو جایگزین میکنیم
+            userTeamData.name = name;
+            userTeamData.avatar = selectedAvatar;
+            
+            document.getElementById('login-screen').style.display = 'none';
+            saveGame();
+            updateUI();
+            startChatBots();
+        }
+
+        // ==========================================
+        // ذخیره و بازیابی
+        // ==========================================
+        function saveGame() {
+            localStorage.setItem('cluby_save_v10', JSON.stringify({
+                coins: myCoins, players: allPlayers, market: marketPlayers, leagues: leaguesData,
+                userTier: userTier, userGroupIndex: userGroupIndex, userTeam: userTeamData, week: currentWeek, season: currentSeason, 
+                schedule: schedule, tactic: savedTactic, slider: savedSliderValue, coach: myCoach,
+                globalMsgs: globalMessages, privateMsgs: privateMessages, matchHistory: userMatchHistory,
+                cupTeams: cupTeams, cupStage: cupStage, cupUserOpponent: cupUserOpponent
+            }));
+        }
+
+        function initNewGame() {
+            allPlayers = [...defaultPlayers];
+            marketPlayers = generateMarketPlayers();
+            leaguesData = generateLeagues();
+            userTier = 3; 
+            userGroupIndex = 0; 
+            
+            // ساخت یک تیم پایه (اسمش بعدا تو createAccount تغییر میکنه)
+            userTeamData = { id: 'me', name: 'تیم من', avatar: '👤', strength: 80, p: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, pts: 0 };
+            leaguesData[userTier].groups[userGroupIndex].teams[7] = userTeamData; 
+            
+            currentWeek = 1;
+            currentSeason = 1;
+            myCoins = 100000;
+            myCoach = null;
+            userMatchHistory = [];
+            generateSchedule();
+            
+            globalMessages = [
+                { sender: 'سیستم', text: 'به گپ عمومی خوش آمدید!', type: 'other' },
+                { sender: 'کاربر فعال ۱', text: 'سلام بچه‌ها، کی آماده بازی هفته بعدیم؟', type: 'other' }
+            ];
+            privateMessages = {};
+            initCup();
+        }
+
+        function resetGame() {
+            if(confirm("آیا مطمئن هستید؟ تمام دیتاها پاک خواهند شد.")) {
+                localStorage.removeItem('cluby_save_v10');
+                location.reload();
+            }
+        }
+
+        function generateSchedule() {
+            let currentGroupTeams = leaguesData[userTier].groups[userGroupIndex].teams.filter(t => t.id !== 'me');
+            schedule = [];
+            for(let i=0; i<7; i++) { schedule.push(currentGroupTeams[i].id); }
+            schedule.sort(() => Math.random() - 0.5);
+        }
+
+        // ==========================================
+        // جام
+        // ==========================================
+        function initCup() {
+            let allTeams = [];
+            leaguesData.forEach(tier => {
+                tier.groups.forEach(group => {
+                    group.teams.forEach(t => {
+                        if(t.id !== 'me') allTeams.push({...t});
+                    });
+                });
+            });
+            
+            allTeams.sort(() => Math.random() - 0.5);
+            cupTeams = allTeams.slice(0, 7); 
+            cupTeams.push(userTeamData);
+            cupTeams.sort(() => Math.random() - 0.5); 
+
+            cupStage = 0;
+            cupUserOpponent = null;
+            renderCupBracket();
+        }
+
+        function renderCupBracket() {
+            let qfDiv = document.getElementById('cup-qf');
+            let sfDiv = document.getElementById('cup-sf');
+            let finalDiv = document.getElementById('cup-final');
+            
+            qfDiv.innerHTML = ''; sfDiv.innerHTML = ''; finalDiv.innerHTML = '';
+
+            for(let i=0; i<8; i+=2) {
+                let t1 = cupTeams[i];
+                let t2 = cupTeams[i+1];
+                let isUserMatch = (t1.id === 'me' || t2.id === 'me');
+                qfDiv.innerHTML += `
+                    <div class="cup-match ${isUserMatch ? 'my-team' : ''}">
+                        <div class="team">${t1.name}</div><div class="score">-</div><div class="team">${t2.name}</div>
+                    </div>`;
+            }
+
+            if(cupStage === 0) {
+                let userIndex = cupTeams.findIndex(t => t.id === 'me');
+                let oppIndex = userIndex % 2 === 0 ? userIndex + 1 : userIndex - 1;
+                cupUserOpponent = cupTeams[oppIndex];
+                document.getElementById('btn-play-cup').style.display = 'block';
+                document.getElementById('btn-play-cup').innerText = `بازی با ${cupUserOpponent.name}`;
+            } else if (cupStage === 1) {
+                document.getElementById('btn-play-cup').innerText = `بازی نیمه‌نهایی`;
+            } else if (cupStage === 2) {
+                document.getElementById('btn-play-cup').innerText = `بازی فینال`;
+            } else {
+                document.getElementById('btn-play-cup').style.display = 'none';
+            }
+        }
+
+        function startCupMatch() {
+            if(!cupUserOpponent) return;
+            let myPower = myTeamPower + (myCoach ? myCoach.bonus : 0);
+            let oppPower = cupUserOpponent.strength;
+            
+            let myScore = Math.floor(Math.random() * (myPower / 20));
+            let oppScore = Math.floor(Math.random() * (oppPower / 20));
+            
+            alert(`نتیجه جام: ${userTeamData.name} ${myScore} - ${oppScore} ${cupUserOpponent.name}`);
+            
+            if(myScore >= oppScore) {
+                myCoins += 50000;
+                alert("تبریک! صعود کردید. جایزه: ۵۰,۰۰۰ سکه");
+                cupStage++;
+                if(cupStage > 2) {
+                    alert("🏆 قهرمان شدید! ۲۰۰,۰۰۰ سکه جایزه گرفتید!");
+                    myCoins += 200000;
+                    cupStage = 3;
+                    initCup(); 
+                } else {
+                    let remaining = cupTeams.filter(t => t.id !== 'me');
+                    remaining.sort(() => Math.random() - 0.5);
+                    cupUserOpponent = remaining[0];
+                    renderCupBracket();
+                }
+            } else {
+                alert("متاسفانه از جام حذف شدید.");
+                cupStage = 3;
+                renderCupBracket();
+            }
+            updateUI();
+            saveGame();
+        }
+
+        // ==========================================
+        // UI و رندرها
+        // ==========================================
+        function updateUI() {
+            document.getElementById('header-coins').innerText = myCoins.toLocaleString('fa-IR');
+            document.getElementById('header-team-name').innerText = userTeamData.name;
+            document.getElementById('header-avatar').innerText = userTeamData.avatar || '👤';
+            document.getElementById('club-team-name').innerText = userTeamData.name;
+            document.getElementById('club-league-name').innerText = leaguesData[userTier].name + ' - ' + leaguesData[userTier].groups[userGroupIndex].name;
+            
+            if (myCoach) {
+                document.getElementById('club-coach-name').innerText = 'مربی: ' + myCoach.name;
+                document.getElementById('current-coach-name').innerText = myCoach.name;
+                document.getElementById('btn-fire-coach').style.display = 'block';
+            } else {
+                document.getElementById('club-coach-name').innerText = 'مربی: ندارد';
+                document.getElementById('current-coach-name').innerText = 'هیچ مربی ندارید';
+                document.getElementById('btn-fire-coach').style.display = 'none';
+            }
+
+            document.querySelectorAll('.tactic-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`btn-${savedTactic}`).classList.add('active');
+            document.getElementById('tactic-slider').value = savedSliderValue;
+            updateSliderLabel();
+
+            renderTeam();
+            renderClubHome();
+            userTeamData.strength = myTeamPower;
+        }
+
+        function hideAllPages() {
+            document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active'));
+        }
+
+        function switchTopTab(tab) {
+            hideAllPages();
+            document.querySelectorAll('.top-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+            if(tab === 'club') {
+                document.getElementById('tab-club').classList.add('active');
+                document.getElementById('nav-club').classList.add('active');
+                document.getElementById('page-club').classList.add('active');
+                renderClubHome();
+            } else if(tab === 'chat') {
+                document.getElementById('tab-chat').classList.add('active');
+                document.getElementById('page-public-chat').classList.add('active');
+                renderPublicChat();
+            }
+        }
+
+        function switchBottomTab(tab) {
+            hideAllPages();
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.querySelectorAll('.top-tab').forEach(t => t.classList.remove('active'));
+
+            document.getElementById(`nav-${tab}`).classList.add('active');
+
+            if(tab === 'club') {
+                document.getElementById('tab-club').classList.add('active');
+                document.getElementById('page-club').classList.add('active');
+                renderClubHome();
+            } else if(tab === 'league') {
+                document.getElementById('page-league').classList.add('active');
+                initLeagueDropdowns();
+                renderLeagueTable();
+            } else if(tab === 'management') {
+                document.getElementById('page-management').classList.add('active');
+            } else if(tab === 'cup') {
+                document.getElementById('page-cup').classList.add('active');
+                renderCupBracket();
+            } else if(tab === 'union') {
+                document.getElementById('page-union').classList.add('active');
+            } else if(tab === 'transfers') {
+                document.getElementById('page-transfers').classList.add('active');
+                renderMarketPlayers();
+            }
+        }
+
+        function renderClubHome() {
+            const nextMatchDiv = document.getElementById('club-next-match-container');
+            const upcomingDiv = document.getElementById('club-upcoming-matches');
+            const pastDiv = document.getElementById('club-past-matches');
+            nextMatchDiv.innerHTML = ''; upcomingDiv.innerHTML = ''; pastDiv.innerHTML = '';
+
+            if (currentWeek <= 7) {
+                let oppId = schedule[currentWeek - 1];
+                let oppTeam = leaguesData[userTier].groups[userGroupIndex].teams.find(t => t.id === oppId);
+                nextMatchDiv.innerHTML = `
+                    <div class="match-card next">
+                        <div class="match-teams">
+                            <div class="m-team">${userTeamData.name}</div>
+                            <div class="m-info" style="text-align: center;">هفته ${currentWeek}<br>VS</div>
+                            <div class="m-team">${oppTeam ? oppTeam.name : 'نامشخص'}</div>
+                        </div>
+                    </div>
+                    <button class="btn btn-gold" style="margin-top: 10px;" onclick="startMatch()">ورود به زمین</button>
+                `;
+            } else {
+                nextMatchDiv.innerHTML = '<p style="text-align:center; color:#aaa; font-size:12px;">فصل به پایان رسیده است.</p>';
+            }
+
+            let upCount = 0;
+            for (let w = currentWeek + 1; w <= 7; w++) {
+                let oppId = schedule[w - 1];
+                let oppTeam = leaguesData[userTier].groups[userGroupIndex].teams.find(t => t.id === oppId);
+                if (!oppTeam) continue;
+                upcomingDiv.innerHTML += `
+                    <div class="match-card">
+                        <div class="match-teams">
+                            <div class="m-team">${userTeamData.name}</div>
+                            <div class="m-info" style="text-align: center;">هفته ${w}</div>
+                            <div class="m-team">${oppTeam.name}</div>
+                        </div>
+                    </div>
+                `;
+                upCount++;
+            }
+            if(upCount === 0) upcomingDiv.innerHTML = '<p style="font-size:12px; color:#888; text-align:center;">بازی دیگری باقی نمانده.</p>';
+
+            if (userMatchHistory.length === 0) {
+                pastDiv.innerHTML = '<p style="font-size:12px; color:#888; text-align:center;">هنوز بازی انجام نشده.</p>';
+            } else {
+                userMatchHistory.slice().reverse().forEach(m => {
+                    let scoreColor = m.scoreHome > m.scoreAway ? 'win-badge' : (m.scoreHome < m.scoreAway ? 'loss-badge' : 'draw-badge');
+                    let resText = m.scoreHome > m.scoreAway ? 'برد' : (m.scoreHome < m.scoreAway ? 'باخت' : 'مساوی');
+                    pastDiv.innerHTML += `
+                        <div class="match-card">
+                            <div class="match-teams">
+                                <div class="m-team">${userTeamData.name}</div>
+                                <div class="m-score">${m.scoreHome} - ${m.scoreAway}</div>
+                                <div class="m-team">${m.opponentName}</div>
+                                <div class="m-info"><span class="${scoreColor}">${resText}</span><br>هفته ${m.week}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+        }
+
+        function openSettings() {
+            document.getElementById('settings-team-name').value = userTeamData.name;
+            document.getElementById('settings-modal').style.display = 'flex';
+        }
+        function closeSettings() { document.getElementById('settings-modal').style.display = 'none'; }
+        function saveTeamName() {
+            let newName = document.getElementById('settings-team-name').value.trim();
+            if(newName.length > 0) {
+                userTeamData.name = newName;
+                saveGame(); updateUI(); closeSettings();
+                alert('نام تیم تغییر کرد.');
+            }
+        }
+
+        function renderTeam() {
+            document.getElementById('row-gk').innerHTML = '';
+            document.getElementById('row-df').innerHTML = '';
+            document.getElementById('row-mf').innerHTML = '';
+            document.getElementById('row-fw').innerHTML = '';
+            document.getElementById('bench').innerHTML = '';
+            
+            let totalPower = 0; let lineupCount = 0;
+
+            allPlayers.forEach(player => {
+                const container = document.createElement('div');
+                container.className = 'player-container';
+                let energyClass = player.energy > 60 ? 'energy-high' : (player.energy > 30 ? 'energy-med' : 'energy-low');
+                
+                container.innerHTML = `
+                    <div class="player-card pos-${player.pos} ${selectedBenchPlayerId === player.id ? 'selected' : ''}">
+                        <div class="player-ovr">${player.ovr}</div>
+                        <div class="player-name">${player.name}</div>
+                    </div>
+                    <div class="energy-bar"><div class="energy-fill ${energyClass}" style="width: ${player.energy}%"></div></div>
+                `;
+                const card = container.querySelector('.player-card');
+
+                if (player.inLineup) {
+                    let effectiveOvr = player.ovr * (0.5 + (player.energy / 200)); 
+                    totalPower += effectiveOvr; lineupCount++;
+                    card.onclick = () => swapWithBench(player.id);
+                    
+                    if (player.pos === 'GK') document.getElementById('row-gk').appendChild(container);
+                    if (player.pos === 'DF') document.getElementById('row-df').appendChild(container);
+                    if (player.pos === 'MF') document.getElementById('row-mf').appendChild(container);
+                    if (player.pos === 'FW') document.getElementById('row-fw').appendChild(container);
+                } else {
+                    card.onclick = () => selectBenchPlayer(player.id);
+                    document.getElementById('bench').appendChild(container);
+                }
+            });
+            myTeamPower = lineupCount > 0 ? Math.round(totalPower / lineupCount) : 0;
+            document.getElementById('club-power').innerText = myTeamPower;
+        }
+
+        function setTactic(tactic) {
+            savedTactic = tactic;
+            document.querySelectorAll('.tactic-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`btn-${tactic}`).classList.add('active');
+        }
+
+        function updateSliderLabel() {
+            let val = parseInt(document.getElementById('tactic-slider').value);
+            let text = val < 30 ? "کاملاً دفاعی" : (val < 50 ? "دفاعی" : (val > 70 ? "کاملاً هجومی" : (val > 50 ? "هجومی" : "متعادل")));
+            document.getElementById('slider-value-text').innerText = text;
+        }
+
+        function confirmTactics() {
+            savedSliderValue = parseInt(document.getElementById('tactic-slider').value);
+            saveGame();
+            alert('تاکتیک ذخیره شد!');
+        }
+
+        function selectBenchPlayer(playerId) {
+            selectedBenchPlayerId = (selectedBenchPlayerId === playerId) ? null : playerId;
+            renderTeam(); 
+        }
+
+        function swapWithBench(lineupPlayerId) {
+            if (selectedBenchPlayerId === null) return; 
+            const lineupPlayer = allPlayers.find(p => p.id === lineupPlayerId);
+            const benchPlayer = allPlayers.find(p => p.id === selectedBenchPlayerId);
+
+            if(lineupPlayer.pos !== benchPlayer.pos) {
+                alert('فقط هم‌پست می‌توانند تعویض شوند!');
+                selectedBenchPlayerId = null; renderTeam(); return;
+            }
+            lineupPlayer.inLineup = false; benchPlayer.inLineup = true;
+            selectedBenchPlayerId = null;
+            renderTeam(); saveGame(); 
+        }
+
+        function initLeagueDropdowns() {
+            let tierSelect = document.getElementById('league-tier-select');
+            tierSelect.value = userTier;
+            updateGroupDropdown();
+            document.getElementById('league-group-select').value = userGroupIndex;
+        }
+
+        function updateGroupDropdown() {
+            let tier = parseInt(document.getElementById('league-tier-select').value);
+            let groupSelect = document.getElementById('league-group-select');
+            groupSelect.innerHTML = '';
+            
+            leaguesData[tier].groups.forEach((g, idx) => {
+                let opt = document.createElement('option');
+                opt.value = idx; opt.innerText = g.name; groupSelect.appendChild(opt);
+            });
+        }
+
+        function renderLeagueTable() {
+            let tier = parseInt(document.getElementById('league-tier-select').value);
+            let groupIdx = parseInt(document.getElementById('league-group-select').value);
+            let league = leaguesData[tier];
+            let group = league.groups[groupIdx];
+
+            group.teams.sort((a, b) => {
+                if (b.pts !== a.pts) return b.pts - a.pts;
+                const diffA = a.gf - a.ga; const diffB = b.gf - b.ga;
+                if (diffB !== diffA) return diffB - diffA;
+                return b.gf - a.gf;
+            });
+
+            const tbody = document.getElementById('league-tbody');
+            tbody.innerHTML = '';
+
+            group.teams.forEach((team, index) => {
+                const tr = document.createElement('tr');
+                if (team.id === 'me') tr.classList.add('my-team');
+                
+                if (tier === 0) {
+                    if (index === 0) tr.classList.add('champion');
+                    if (index >= 6) tr.classList.add('relegation'); 
+                } else {
+                    if (index < 2) tr.classList.add('promotion'); 
+                    if (index >= 6) tr.classList.add('relegation'); 
+                }
+
+                const diff = team.gf - team.ga;
+                const diffStr = diff > 0 ? `+${diff}` : diff;
+                tr.innerHTML = `
+                    <td>${index + 1}</td><td class="team-name-col">${team.name}</td>
+                    <td>${team.p}</td><td>${team.w}</td><td>${team.d}</td><td>${team.l}</td>
+                    <td>${diffStr}</td><td style="color:var(--gold); font-weight:bold;">${team.pts}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function switchTransferTab(tab) {
+            if(tab === 'players') {
+                document.getElementById('btn-tab-players').className = 'btn btn-gold';
+                document.getElementById('btn-tab-coaches').className = 'btn btn-dark';
+                document.getElementById('transfers-players-view').style.display = 'block';
+                document.getElementById('transfers-coaches-view').style.display = 'none';
+                renderMarketPlayers();
+            } else {
+                document.getElementById('btn-tab-players').className = 'btn btn-dark';
+                document.getElementById('btn-tab-coaches').className = 'btn btn-gold';
+                document.getElementById('transfers-players-view').style.display = 'none';
+                document.getElementById('transfers-coaches-view').style.display = 'block';
+                renderMarketCoaches();
+            }
+        }
+
+        function renderMarketPlayers() {
+            const list = document.getElementById('market-players-list');
+            list.innerHTML = '';
+            marketPlayers.forEach(p => {
+                list.innerHTML += `
+                    <div class="match-card" style="padding: 10px;">
+                        <div style="display:flex; flex-direction:column; width: 60%;">
+                            <span style="color:var(--gold); font-weight:bold; font-size:14px;">${p.name}</span>
+                            <span style="font-size:11px; color:#aaa;">پست: ${p.pos} | قدرت: ${p.ovr}</span>
+                        </div>
+                        <div style="text-align:left; width: 40%;">
+                            <div style="color:#4caf50; font-weight:bold; font-size:12px; margin-bottom:5px;">${p.price.toLocaleString('fa-IR')} 🪙</div>
+                            <button class="btn btn-gold" style="padding:5px; font-size:12px;" onclick="buyPlayer(${p.id})" ${myCoins < p.price ? 'disabled' : ''}>خرید</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function buyPlayer(id) {
+            const idx = marketPlayers.findIndex(p => p.id === id);
+            if(idx === -1) return;
+            const p = marketPlayers[idx];
+            if(myCoins >= p.price) {
+                myCoins -= p.price;
+                allPlayers.push({...p, inLineup: false});
+                marketPlayers.splice(idx, 1);
+                alert(`${p.name} خریداری شد.`);
+                updateUI(); renderMarketPlayers(); saveGame();
+            }
+        }
+
+        function renderMarketCoaches() {
+            const list = document.getElementById('market-coaches-list');
+            list.innerHTML = '';
+            coachMarketData.forEach(c => {
+                if(myCoach && myCoach.id === c.id) return;
+                list.innerHTML += `
+                    <div class="match-card" style="padding: 10px;">
+                        <div style="display:flex; flex-direction:column; width: 60%;">
+                            <span style="color:var(--gold); font-weight:bold; font-size:14px;">${c.name}</span>
+                            <span style="font-size:11px; color:#4caf50;">بونوس: +${c.bonus}</span>
+                        </div>
+                        <div style="text-align:left; width: 40%;">
+                            <div style="color:#4caf50; font-weight:bold; font-size:12px; margin-bottom:5px;">${c.price.toLocaleString('fa-IR')} 🪙</div>
+                            <button class="btn btn-dark" style="padding:5px; font-size:12px;" onclick="buyCoach(${c.id})" ${myCoins < c.price ? 'disabled' : ''}>استخدام</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function buyCoach(id) {
+            const c = coachMarketData.find(x => x.id === id);
+            if(myCoins >= c.price) {
+                myCoins -= c.price;
+                myCoach = {...c};
+                alert(`${c.name} سرمربی شد.`);
+                updateUI(); renderMarketCoaches(); saveGame();
+            }
+        }
+
+        function fireCoach() {
+            if(confirm("اخراج شود؟")) {
+                myCoach = null; updateUI(); renderMarketCoaches(); saveGame();
+            }
+        }
+
+        function renderPublicChat() {
+            const win = document.getElementById('public-chat-window');
+            win.innerHTML = '';
+            globalMessages.forEach(msg => {
+                win.innerHTML += `<div class="msg-bubble ${msg.type}">${msg.type==='other'?`<span class="msg-sender">${msg.sender}</span>`:''}${msg.text}</div>`;
+            });
+            win.scrollTop = win.scrollHeight;
+        }
+
+        function sendPublicChat() {
+            const inp = document.getElementById('public-chat-input');
+            if(!inp.value.trim()) return;
+            globalMessages.push({sender: userTeamData.name, text: inp.value, type: 'me'});
+            inp.value = ''; renderPublicChat(); saveGame();
+        }
+
+        function handlePublicChat(e) { if(e.key==='Enter') sendPublicChat(); }
+
+        function startChatBots() {
+            setInterval(() => {
+                if(Math.random() > 0.6) {
+                    const msgs = ["کسی بازی آنلاین هست؟", "من امروز قهرمان میشم!", "بازیکن خوب تو بازار هست؟", "سکه هام تموم شد :(", "کیفیت بازی عالیه"];
+                    const senders = ["کاربر فعال ۱", "پادشاه لیگ", "مربی اسطوره"];
+                    globalMessages.push({sender: senders[Math.floor(Math.random()*senders.length)], text: msgs[Math.floor(Math.random()*msgs.length)], type: 'other'});
+                    if(document.getElementById('page-public-chat').classList.contains('active')) renderPublicChat();
+                }
+            }, 10000);
+        }
+
+        function openPM() {
+            document.getElementById('pm-modal').style.display = 'flex';
+            document.getElementById('pm-title').innerText = 'پیام‌ها';
+            document.getElementById('pm-contacts-list').style.display = 'flex';
+            document.getElementById('pm-chat-view').style.display = 'none';
+            document.getElementById('pm-badge').style.display = 'none';
+            
+            const list = document.getElementById('pm-contacts-list');
+            list.innerHTML = '';
+            contacts.forEach(c => {
+                list.innerHTML += `
+                    <div class="pm-contact-item" onclick="openPMChat('${c.id}', '${c.name}')">
+                        <div class="pm-avatar">${c.avatar}</div>
+                        <div><div style="font-weight:bold; font-size:14px;">${c.name}</div><div style="font-size:11px; color:#4caf50;">آنلاین</div></div>
+                    </div>
+                `;
+            });
+        }
+
+        function closePM() { document.getElementById('pm-modal').style.display = 'none'; }
+
+        function openPMChat(id, name) {
+            currentPMContactId = id;
+            document.getElementById('pm-title').innerText = name;
+            document.getElementById('pm-contacts-list').style.display = 'none';
+            document.getElementById('pm-chat-view').style.display = 'flex';
+            if(!privateMessages[id]) privateMessages[id] = [{sender: name, text:'سلام، چطوری؟', type:'other'}];
+            renderPMChat();
+        }
+
+        function renderPMChat() {
+            const win = document.getElementById('pm-chat-messages');
+            win.innerHTML = '';
+            (privateMessages[currentPMContactId] || []).forEach(msg => {
+                win.innerHTML += `<div class="msg-bubble ${msg.type}" style="padding:8px 12px; font-size:12px;">${msg.type==='other'?`<span class="msg-sender">${msg.sender}</span>`:''}${msg.text}</div>`;
+            });
+            win.scrollTop = win.scrollHeight;
+        }
+
+        function sendPM() {
+            const inp = document.getElementById('pm-chat-input');
+            if(!inp.value.trim() || !currentPMContactId) return;
+            privateMessages[currentPMContactId].push({sender: 'من', text: inp.value, type: 'me'});
+            inp.value = ''; renderPMChat(); saveGame();
+
+            setTimeout(() => {
+                const replies = ["آره داداش", "عالیه!", "منم موافقم", "بیا با هم بازی کنیم", "تیمت چندمه؟"];
+                const botName = contacts.find(c => c.id === currentPMContactId).name;
+                privateMessages[currentPMContactId].push({sender: botName, text: replies[Math.floor(Math.random()*replies.length)], type: 'other'});
+                if(document.getElementById('pm-chat-view').style.display !== 'none') renderPMChat();
+                saveGame();
+            }, 1500);
+        }
+
+        function handlePMEnter(e) { if(e.key==='Enter') sendPM(); }
+
+        let matchInterval, currentMinute = 0, scoreHome = 0, scoreAway = 0, enemyTactic = '';
+        let currentOpponentId = '';
+
+        function startMatch() {
+            if(currentWeek > 7) return;
+            const keys = ['short', 'long', 'press', 'counter'];
+            enemyTactic = keys[Math.floor(Math.random() * keys.length)];
+            currentOpponentId = schedule[currentWeek - 1];
+            const opponent = leaguesData[userTier].groups[userGroupIndex].teams.find(t => t.id === currentOpponentId);
+
+            document.getElementById('match-home-name').innerText = userTeamData.name;
+            document.getElementById('match-away-name').innerText = opponent.name;
+            document.getElementById('match-league-info').innerText = `${leaguesData[userTier].name} - هفته ${currentWeek}`;
+
+            currentMinute = 0; scoreHome = 0; scoreAway = 0;
+            document.getElementById('screen-match').style.display = 'flex';
+            document.getElementById('score-home').innerText = '0';
+            document.getElementById('score-away').innerText = '0';
+            document.getElementById('match-timer').innerText = "0'";
+            document.getElementById('event-log').innerHTML = '';
+            document.getElementById('btn-skip').style.display = 'block';
+            document.getElementById('btn-close-match').style.display = 'none';
+
+            matchInterval = setInterval(simulateMinute, 1000); 
+        }
+
+        function simulateMinute() {
+            currentMinute++;
+            document.getElementById('match-timer').innerText = currentMinute + "'";
+            if (currentMinute > 90) { endMatch(); return; }
+
+            let myAttackPower = myTeamPower;
+            let enemyAttackPower = leaguesData[userTier].groups[userGroupIndex].teams.find(t => t.id === currentOpponentId).strength;
+
+            if(myCoach) myAttackPower += myCoach.bonus;
+
+            const tacticsLogic = { 'short': 'press', 'long': 'short', 'press': 'long', 'counter': 'long' };
+            if (tacticsLogic[savedTactic] === enemyTactic) { myAttackPower *= 1.2; enemyAttackPower *= 0.8; } 
+            else if (tacticsLogic[enemyTactic] === savedTactic) { enemyAttackPower *= 1.2; myAttackPower *= 0.8; }
+
+            let sliderMod = (savedSliderValue - 50) / 100;
+            myAttackPower += myAttackPower * sliderMod;
+            enemyAttackPower -= enemyAttackPower * sliderMod;
+
+            let myChance = (myAttackPower / 100) * 0.03;
+            let enemyChance = (enemyAttackPower / 100) * 0.03;
+            let random = Math.random();
+
+            if (random < myChance) {
+                scoreHome++;
+                document.getElementById('score-home').innerText = scoreHome;
+                addEvent('goal', `⚽ گل! دقیقه ${currentMinute}: ${getRandomPlayer('FW')} برای شما گل زد!`);
+            } else if (random > (1 - enemyChance)) {
+                scoreAway++;
+                document.getElementById('score-away').innerText = scoreAway;
+                addEvent('goal', `😔 گل خوردیم! دقیقه ${currentMinute}: حریف گل زد.`);
+            }
+        }
+
+        function getRandomPlayer(pos) {
+            const lineup = allPlayers.filter(p => p.inLineup && p.pos === pos);
+            return lineup.length > 0 ? lineup[Math.floor(Math.random() * lineup.length)].name : 'بازیکن';
+        }
+
+        function addEvent(type, text) {
+            const log = document.getElementById('event-log');
+            log.innerHTML += `<div class="event-item ${type}">${text}</div>`;
+            log.scrollTop = log.scrollHeight;
+        }
+
+        function endMatch() {
+            clearInterval(matchInterval);
+            let reward = scoreHome > scoreAway ? 15000 : (scoreHome < scoreAway ? 2000 : 5000);
+            myCoins += reward;
+            
+            let myTeam = leaguesData[userTier].groups[userGroupIndex].teams.find(t => t.id === 'me');
+            let oppTeam = leaguesData[userTier].groups[userGroupIndex].teams.find(t => t.id === currentOpponentId);
+            
+            userMatchHistory.push({ week: currentWeek, opponentName: oppTeam.name, scoreHome: scoreHome, scoreAway: scoreAway });
+
+            myTeam.p++; oppTeam.p++;
+            myTeam.gf += scoreHome; myTeam.ga += scoreAway; oppTeam.gf += scoreAway; oppTeam.ga += scoreHome;
+            if (scoreHome > scoreAway) { myTeam.w++; myTeam.pts += 3; oppTeam.l++; }
+            else if (scoreHome < scoreAway) { myTeam.l++; oppTeam.w++; oppTeam.pts += 3; }
+            else { myTeam.d++; myTeam.pts += 1; oppTeam.d++; oppTeam.pts += 1; }
+
+            allPlayers.forEach(p => { if (p.inLineup) p.energy = Math.max(0, p.energy - (15 + Math.floor(Math.random()*10))); });
+
+            leaguesData.forEach(tier => {
+                tier.groups.forEach(group => {
+                    let available = [...group.teams];
+                    if (tier.id === userTier && group === leaguesData[userTier].groups[userGroupIndex]) {
+                        available = available.filter(t => t.id !== 'me' && t.id !== currentOpponentId);
+                    }
+                    while(available.length >= 2) {
+                        let t1 = available.shift(), t2 = available.shift();
+                        let g1 = Math.floor(Math.random() * (t1.strength/25)), g2 = Math.floor(Math.random() * (t2.strength/25));
+                        t1.p++; t2.p++; t1.gf += g1; t1.ga += g2; t2.gf += g2; t2.ga += g1;
+                        if(g1>g2){t1.w++;t1.pts+=3;t2.l++;} else if(g1<g2){t1.l++;t2.w++;t2.pts+=3;} else {t1.d++;t1.pts++;t2.d++;t2.pts++;}
+                    }
+                });
+            });
+
+            currentWeek++;
+            saveGame();
+
+            setTimeout(() => {
+                let resText = scoreHome > scoreAway ? "🏆 بردید!" : (scoreHome < scoreAway ? "❌ باختید!" : "🤝 مساوی شدید!");
+                addEvent('goal', `پایان بازی! ${resText} جایزه: ${reward.toLocaleString('fa-IR')} سکه`);
+                document.getElementById('btn-skip').style.display = 'none';
+                if(currentWeek <= 7) document.getElementById('btn-close-match').style.display = 'block';
+                else setTimeout(handleSeasonEnd, 1500);
+            }, 1000);
+        }
+
+        function skipMatch() {
+            clearInterval(matchInterval);
+            while (currentMinute <= 90) { simulateMinute(); }
+        }
+
+        function closeMatch() {
+            document.getElementById('screen-match').style.display = 'none';
+            updateUI();
+            switchBottomTab('club');
+        }
+
+        function handleSeasonEnd() {
+            leaguesData.forEach(tier => {
+                tier.groups.forEach(g => {
+                    g.teams.sort((a,b) => b.pts - a.pts || (b.gf-b.ga) - (a.gf-a.ga));
+                });
+            });
+
+            let userGroup = leaguesData[userTier].groups[userGroupIndex];
+            let userRank = userGroup.teams.findIndex(t => t.id === 'me');
+            let userResultText = "";
+
+            if (userTier === 0) {
+                if (userRank === 0) { userResultText += "🎉 قهرمان لیگ برتر شدید! (۳۰۰,۰۰۰ سکه)<br>"; myCoins += 300000; }
+                else if (userRank === 1) { userResultText += "🥈 نایب قهرمان لیگ برتر شدید! (۱۵۰,۰۰۰ سکه)<br>"; myCoins += 150000; }
+                else if (userRank >= 6) {
+                    userResultText += "📉 متاسفانه از لیگ برتر سقوط کردید!<br>";
+                    userTier = 1; userGroupIndex = Math.floor(Math.random()*2);
+                } else userResultText += "شما در لیگ برتر ماندید.<br>";
+            } else {
+                if (userRank < 2) {
+                    userResultText += "🏆 تبریک! شما صعود کردید به لیگ بالاتر!<br>";
+                    userTier--; userGroupIndex = Math.floor(Math.random()*leaguesData[userTier].groups.length);
+                } else if (userRank >= 6) {
+                    userResultText += "📉 متاسفانه شما به لیگ پایین‌تر سقوط کردید!<br>";
+                    userTier++; userGroupIndex = Math.floor(Math.random()*leaguesData[userTier].groups.length);
+                } else userResultText += "شما در همین لیگ ماندید.<br>";
+            }
+
+            for (let t = leaguesData.length - 1; t > 0; t--) {
+                let lowerTier = leaguesData[t];
+                let upperTier = leaguesData[t-1];
+                
+                let promotedTeams = [];
+                lowerTier.groups.forEach(g => { promotedTeams.push(...g.teams.splice(0, 2)); });
+
+                let relegatedTeams = [];
+                upperTier.groups.forEach(g => { relegatedTeams.push(...g.teams.splice(6, 4)); });
+
+                promotedTeams.forEach(team => {
+                    let targetGroup = upperTier.groups[Math.floor(Math.random() * upperTier.groups.length)];
+                    targetGroup.teams.push(team);
+                });
+                relegatedTeams.forEach(team => {
+                    let targetGroup = lowerTier.groups[Math.floor(Math.random() * lowerTier.groups.length)];
+                    targetGroup.teams.push(team);
+                });
+            }
+
+            leaguesData.forEach((tier, tIdx) => {
+                tier.groups.forEach((group, gIdx) => {
+                    group.teams = group.teams.filter(t => t.id !== 'me');
+                    if (tIdx === userTier && gIdx === userGroupIndex) {
+                        group.teams[7] = userTeamData; 
+                    }
+                });
+            });
+
+            document.getElementById('season-winner-text').innerHTML = userResultText;
+            document.getElementById('season-end-modal').style.display = 'flex';
+        }
+
+        function startNewSeason() {
+            leaguesData.forEach(tier => {
+                tier.groups.forEach(group => {
+                    group.teams.forEach(t => { t.p = 0; t.w = 0; t.d = 0; t.l = 0; t.gf = 0; t.ga = 0; t.pts = 0; });
+                });
+            });
+            allPlayers.forEach(p => p.energy = 100);
+            marketPlayers = generateMarketPlayers(); 
+            
+            currentWeek = 1; currentSeason++;
+            userMatchHistory = [];
+            generateSchedule();
+            document.getElementById('season-end-modal').style.display = 'none';
+            saveGame(); updateUI(); switchBottomTab('club');
+        }
+
+        // ==========================================
+        // شروع برنامه
+        // ==========================================
+        window.onload = function() {
+            const savedData = localStorage.getItem('cluby_save_v10');
+            if (savedData) {
+                try {
+                    const parsed = JSON.parse(savedData);
+                    myCoins = parsed.coins;
+                    allPlayers = parsed.players || [...defaultPlayers];
+                    marketPlayers = parsed.market || generateMarketPlayers();
+                    leaguesData = parsed.leagues;
+                    userTier = parsed.userTier;
+                    userGroupIndex = parsed.userGroupIndex;
+                    userTeamData = parsed.userTeam;
+                    currentWeek = parsed.week;
+                    currentSeason = parsed.season;
+                    schedule = parsed.schedule;
+                    savedTactic = parsed.tactic;
+                    savedSliderValue = parsed.slider;
+                    myCoach = parsed.coach;
+                    globalMessages = parsed.globalMsgs;
+                    privateMessages = parsed.privateMsgs;
+                    userMatchHistory = parsed.matchHistory;
+                    cupTeams = parsed.cupTeams;
+                    cupStage = parsed.cupStage;
+                    cupUserOpponent = parsed.cupUserOpponent;
+                    
+                    document.getElementById('login-screen').style.display = 'none';
+                    updateUI();
+                    startChatBots();
+                } catch(e) {
+                    console.error(e);
+                }
+            }
+        };
+    </script>
+</body>
+</html>
